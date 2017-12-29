@@ -1,5 +1,6 @@
 /*
 Created by Freshek on 07.10.2017
+Collect boxes while killing npc function added by Lestrox on 28.12.2017
 */
 window.globalSettings = new GlobalSettings();
 var api;
@@ -116,7 +117,7 @@ function logic() {
 
   window.minimap.draw();
 
-  if (api.targetBoxHash == null && api.targetShip == null) {
+	if (api.targetBoxHash == null && api.targetShip == null) {
     if (MathUtils.percentFrom(window.hero.hp, window.hero.maxHp) < window.settings.repairWhenHpIsLowerThanPercent) {
       let gate = api.findNearestGate();
       if (gate.gate) {
@@ -189,15 +190,23 @@ function logic() {
 
   var x;
   var y;
+    var box = api.findNearestBox();
+    var ship = api.findNearestShip();
 
   if (api.targetBoxHash == null && api.targetShip == null && window.movementDone && window.settings.moveRandomly) {
     x = MathUtils.random(100, 20732);
     y = MathUtils.random(58, 12830);
   }
 
-  if (api.targetShip && window.settings.killNpcs && api.targetBoxHash == null) {
+	if ((api.targetShip && window.settings.killNpcs) || (api.targetBoxHash)) {
     api.targetShip.update();
     var dist = api.targetShip.distanceTo(window.hero.position);
+	
+	if(box.box && box.distance + ship.distance< 550) {
+		api.collectBox(box.box);
+		api.targetBoxHash = box.box.hash;
+		return;
+	}
 
     if ((dist > 600 && (api.lockedShip == null || api.lockedShip.id != api.targetShip.id) && $.now() - api.lastMovement > 1000)) {
       x = api.targetShip.position.x - MathUtils.random(-50, 50);
